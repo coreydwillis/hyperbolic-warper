@@ -6,7 +6,7 @@
         <OutputType>WinExe</OutputType>
 
         <!-- Bumping this triggers the release workflow (see .github/workflows/release.yml). -->
-        <Version>0.1.1-alpha</Version>
+        <Version>0.1.2-alpha</Version>
 
         <!-- WinUI 3 -->
         <UseWinUI>true</UseWinUI>
@@ -54,9 +54,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.*" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.*" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+        <!--
+            Pinned, not floating: a floating "1.*"/"10.*" range let a machine with packages
+            already cached (e.g. a dev box) resolve a different transitive dependency graph than a
+            clean-room restore (e.g. CI), even when the headline package version matched. That
+            produced a self-contained publish whose deps.json was missing several WindowsAppSDK
+            runtime entries the working build had, which crashed at launch on any machine without
+            those extra packages already on disk. Pinning keeps restores reproducible everywhere.
+        -->
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260804001" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 
         <Manifest Include="$(ApplicationManifest)" />
     </ItemGroup>

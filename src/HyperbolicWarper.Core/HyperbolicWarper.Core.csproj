@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.*" />
+    <!-- Pinned, not floating: see the comment on HyperbolicWarper.App's PackageReferences for why. -->
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.19" />
   </ItemGroup>
 
 </Project>

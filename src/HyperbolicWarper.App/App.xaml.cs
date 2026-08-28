@@ -37,7 +37,7 @@ namespace HyperbolicWarper.App
             // Resizing before Activate() can pick up the wrong DPI on some displays, so size the window afterward.
             if (_window.AppWindow is { } appWindow)
             {
-                appWindow.Resize(new SizeInt32(1180, 820));
+                appWindow.Resize(new SizeInt32(1180, 1150));
                 if (appWindow.Presenter is OverlappedPresenter presenter)
                 {
                     presenter.PreferredMinimumWidth = 700;
