@@ -20,6 +20,15 @@ public static class SrtParser
 
         foreach (var rawBlock in blocks)
         {
+            // A trailing blank line after the last cue (common in files with an uploader
+            // "credits" cue at the end) leaves a whitespace-only block here: "\n\n\n" splits
+            // on "\n\n" into the last real cue plus a leftover "\n". RemoveEmptyEntries only
+            // strips truly-empty "" blocks, not whitespace-only ones, so skip those too.
+            if (string.IsNullOrWhiteSpace(rawBlock))
+            {
+                continue;
+            }
+
             cueNumber++;
             var lines = rawBlock.Split('\n');
             entries.Add(ParseBlock(lines, cueNumber));
