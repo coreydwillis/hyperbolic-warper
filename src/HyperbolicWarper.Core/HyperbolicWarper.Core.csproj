@@ -6,11 +6,31 @@
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CA2255</NoWarn>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!--
+        Without this, the lock file's RID-specific "net9.0/win-x64" section only gets generated
+        when something restores this project with a runtime identifier in play (e.g. the App
+        project's self-contained publish); a plain build/restore of just this project silently
+        drops that section from the lock file again, for the same reason ILLink.Tasks needed to
+        become an explicit reference above. Declaring the RID here keeps every restore context
+        RID-aware, so the lock file stays identical regardless of which command touches it.
+    -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Pinned, not floating: see the comment on HyperbolicWarper.App's PackageReferences for why. -->
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.19" />
+    <!--
+        Explicit, not SDK-implicit: the SDK only adds this automatically when a self-contained,
+        RID-specific restore/publish is in play (e.g. a runtime identifier plus self-contained
+        equal true), not for a plain build or restore. With RestorePackagesWithLockFile on,
+        whichever context last touches the lock file without locked mode enabled silently rewrites
+        it to match, so an ordinary build after generating the lock file for a self-contained
+        publish silently dropped this entry again, and CI's locked-mode restore then failed on the
+        mismatch. Declaring it unconditionally keeps the resolved graph (and therefore the lock
+        file) identical regardless of which command restores the project.
+    -->
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="9.0.19" />
   </ItemGroup>
 
 </Project>

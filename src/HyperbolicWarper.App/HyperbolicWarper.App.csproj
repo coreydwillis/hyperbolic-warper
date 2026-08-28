@@ -6,7 +6,7 @@
         <OutputType>WinExe</OutputType>
 
         <!-- Bumping this triggers the release workflow (see .github/workflows/release.yml). -->
-        <Version>0.1.4-alpha</Version>
+        <Version>0.1.5-alpha</Version>
 
         <!-- WinUI 3 -->
         <UseWinUI>true</UseWinUI>
@@ -72,6 +72,8 @@
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260804001" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <!-- Explicit, not SDK-implicit: see the matching comment on HyperbolicWarper.Core's PackageReferences for why. -->
+        <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="9.0.19" />
 
         <Manifest Include="$(ApplicationManifest)" />
     </ItemGroup>
