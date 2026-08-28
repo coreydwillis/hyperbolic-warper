@@ -6,7 +6,7 @@
         <OutputType>WinExe</OutputType>
 
         <!-- Bumping this triggers the release workflow (see .github/workflows/release.yml). -->
-        <Version>0.1.0-alpha</Version>
+        <Version>0.1.1-alpha</Version>
 
         <!-- WinUI 3 -->
         <UseWinUI>true</UseWinUI>
@@ -25,6 +25,18 @@
         <!-- App Options -->
         <UseRidGraph>true</UseRidGraph>
         <Platforms>x86;x64;ARM64</Platforms>
+        <!--
+            IMPORTANT for self-contained publish: pass -p:PublishTrimmed=false -p:PublishReadyToRun=false
+            on the `dotnet publish` command line (see README's Publishing section). Self-contained
+            publish trims by default even though this project never sets PublishTrimmed=true itself,
+            and trimming strips managed types that are only ever reached through XAML reflection
+            (value converters instantiated via StaticResource, never "new"'d from C#). That surfaces
+            at runtime as a native crash in Microsoft.UI.Xaml.dll (0xC000027B / STATUS_STOWED_EXCEPTION)
+            the first time such a converter runs, e.g. clicking the RadioButtons bound through
+            ShiftModeEqualsConverter. Setting PublishTrimmed here in the csproj does NOT work: the
+            Windows App SDK's imported targets set it again afterward and silently win, so it must be
+            overridden via the command line instead, where global properties can't be re-assigned.
+        -->
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <PublishProfile>win-$(Platform).pubxml</PublishProfile>
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>

@@ -42,15 +42,17 @@ dotnet run --project src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -p:Pla
 
 ## Publishing a standalone build
 
-The app is configured as **unpackaged** (no MSIX/store identity required), so it can be published as a self-contained folder and just run:
+The app is configured as **unpackaged** (no MSIX/store identity required), so it can be published as a single, self-contained `.exe` (everything, including the Windows App SDK runtime, is bundled into the file and extracted to a temp folder on first launch):
 
 ```bash
-dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained true
+dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true -p:WindowsAppSDKSelfContained=true -p:PublishTrimmed=false -p:PublishReadyToRun=false
 ```
 
-The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows10.0.19041.0/win-x64/publish/`. Copy that folder anywhere and run `HyperbolicWarper.App.exe`.
+The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows10.0.19041.0/win-x64/publish/HyperbolicWarper.App.exe`. Copy that file anywhere and run it.
+
+`-p:PublishTrimmed=false -p:PublishReadyToRun=false` are required, not optional: self-contained publish trims the output by default, which strips managed types that are only reachable through XAML reflection (value converters instantiated via `StaticResource`, never `new`'d from C#) and crashes the app at runtime the first time such a converter runs. See the comment in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) for why this can't just be set once in the project file.
 
 ## Releases
 
-[`.github/workflows/release.yml`](.github/workflows/release.yml) builds a self-contained `win-x64` release and publishes it as a GitHub Release. It only runs when the `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) actually changes on `main`, so ordinary pushes don't trigger a build. To cut a release, bump that version and push (or merge a PR that does); the workflow tags the commit `v<version>` and attaches the build as a release asset. It can also be run manually from the Actions tab.
+[`.github/workflows/release.yml`](.github/workflows/release.yml) publishes the single-file `win-x64` build above as a GitHub Release. It only runs when the `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) actually changes on `main`, so ordinary pushes don't trigger a build. To cut a release, bump that version and push (or merge a PR that does); the workflow tags the commit `v<version>` and attaches `HyperbolicWarper-<version>-win-x64.exe` as a release asset. It can also be run manually from the Actions tab.
 

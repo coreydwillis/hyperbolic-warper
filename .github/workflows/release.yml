@@ -73,17 +73,29 @@ jobs:
         run: dotnet test tests/HyperbolicWarper.Core.Tests/HyperbolicWarper.Core.Tests.csproj --configuration Release --no-restore
 
       - name: Publish
+        # PublishSingleFile + IncludeAllContentForSelfExtract + WindowsAppSDKSelfContained bundle
+        # everything (including the Windows App SDK runtime) into one .exe instead of a folder full
+        # of DLLs. PublishTrimmed/PublishReadyToRun must be disabled here on the command line, not in
+        # the csproj: self-contained publish trims by default, and trimming strips managed types that
+        # are only ever reached through XAML reflection (value converters instantiated via
+        # StaticResource, never "new"'d from C#), which crashes at runtime. See the csproj for details.
         run: >
           dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj
           --configuration Release
           -p:Platform=x64
           -r win-x64
           --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeAllContentForSelfExtract=true
+          -p:WindowsAppSDKSelfContained=true
+          -p:PublishTrimmed=false
+          -p:PublishReadyToRun=false
+          -p:DebugType=none
           -o publish/win-x64
 
-      - name: Zip build output
+      - name: Rename the published exe
         shell: pwsh
-        run: Compress-Archive -Path publish/win-x64/* -DestinationPath "HyperbolicWarper-$env:VERSION-win-x64.zip"
+        run: Move-Item "publish/win-x64/HyperbolicWarper.App.exe" "HyperbolicWarper-$env:VERSION-win-x64.exe"
 
       - name: Create GitHub release
         shell: bash
@@ -103,7 +115,7 @@ jobs:
             prerelease_flag=(--prerelease)
           fi
 
-          gh release create "$tag" "HyperbolicWarper-$VERSION-win-x64.zip" \
+          gh release create "$tag" "HyperbolicWarper-$VERSION-win-x64.exe" \
             --repo "${{ github.repository }}" \
             --title "$tag" \
             --generate-notes \
