@@ -49,3 +49,8 @@ dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -c Release -
 ```
 
 The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows10.0.19041.0/win-x64/publish/`. Copy that folder anywhere and run `HyperbolicWarper.App.exe`.
+
+## Releases
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) builds a self-contained `win-x64` release and publishes it as a GitHub Release. It only runs when the `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) actually changes on `main`, so ordinary pushes don't trigger a build. To cut a release, bump that version and push (or merge a PR that does); the workflow tags the commit `v<version>` and attaches the build as a release asset. It can also be run manually from the Actions tab.
+
