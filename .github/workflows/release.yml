@@ -21,7 +21,7 @@ jobs:
       version: ${{ steps.diff.outputs.version }}
       changed: ${{ steps.diff.outputs.changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -60,9 +60,9 @@ jobs:
     env:
       VERSION: ${{ needs.check-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "9.0.x"
 
@@ -95,7 +95,16 @@ jobs:
             echo "Release $tag already exists, skipping."
             exit 0
           fi
+
+          # A hyphen marks a semver pre-release (e.g. 0.1.0-alpha), which GitHub
+          # should flag as a pre-release rather than a stable release.
+          prerelease_flag=()
+          if [[ "$VERSION" == *-* ]]; then
+            prerelease_flag=(--prerelease)
+          fi
+
           gh release create "$tag" "HyperbolicWarper-$VERSION-win-x64.zip" \
             --repo "${{ github.repository }}" \
             --title "$tag" \
-            --generate-notes
+            --generate-notes \
+            "${prerelease_flag[@]}"
