@@ -115,11 +115,21 @@ jobs:
         shell: pwsh
         run: |
           $exePath = Join-Path (Get-Location) "HyperbolicWarper-$env:VERSION-win-x64.exe"
+          $startTime = Get-Date
           $proc = Start-Process -FilePath $exePath -PassThru
           Start-Sleep -Seconds 10
           $stillRunning = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
           if (-not $stillRunning) {
             Write-Error "The published exe was no longer running 10 seconds after launch, meaning it crashed on startup. Refusing to publish a release."
+
+            Write-Host "----- Application Error events since launch -----"
+            Get-WinEvent -FilterHashtable @{LogName='Application'; ProviderName='Application Error'; StartTime=$startTime} -ErrorAction SilentlyContinue |
+              ForEach-Object { Write-Host $_.Message; Write-Host "---" }
+
+            Write-Host "----- .NET Runtime events since launch -----"
+            Get-WinEvent -FilterHashtable @{LogName='Application'; ProviderName='.NET Runtime'; StartTime=$startTime} -ErrorAction SilentlyContinue |
+              ForEach-Object { Write-Host $_.Message; Write-Host "---" }
+
             exit 1
           }
           Write-Host "Smoke test passed: PID $($proc.Id) is still running 10 seconds after launch."
