@@ -6,7 +6,7 @@
         <OutputType>WinExe</OutputType>
 
         <!-- Bumping this triggers the release workflow (see .github/workflows/release.yml). -->
-        <Version>0.1.2-alpha</Version>
+        <Version>0.1.3-alpha</Version>
 
         <!-- WinUI 3 -->
         <UseWinUI>true</UseWinUI>

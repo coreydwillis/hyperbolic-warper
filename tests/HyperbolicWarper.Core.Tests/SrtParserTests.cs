@@ -35,6 +35,19 @@ public class SrtParserTests
     }
 
     [Fact]
+    public void ParseText_IgnoresTrailingBlankLineAfterLastCue()
+    {
+        // Common in real-world files with an uploader "credits" cue at the end: an extra blank
+        // line after the final cue's separator leaves a whitespace-only leftover block that
+        // RemoveEmptyEntries alone doesn't catch (it only strips truly-empty "" entries).
+        const string withTrailingBlankLine = SampleCrLf + "\r\n";
+
+        var entries = SrtParser.ParseText(withTrailingBlankLine);
+
+        Assert.Equal(3, entries.Count);
+    }
+
+    [Fact]
     public void ParseText_ThrowsWithCueNumberWhenTimingLineIsMissing()
     {
         const string malformed = "1\r\nNot a timing line\r\nSome text\r\n\r\n";
