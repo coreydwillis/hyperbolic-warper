@@ -58,6 +58,8 @@ The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows1
 
 `-p:PublishTrimmed=false -p:PublishReadyToRun=false` are required, not optional: self-contained publish trims the output by default, which strips managed types that are only reachable through XAML reflection (value converters instantiated via `StaticResource`, never `new`'d from C#) and crashes the app at runtime the first time such a converter runs. See the comment in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) for why this can't just be set once in the project file.
 
+`HyperbolicWarper.App/packages.lock.json` and `HyperbolicWarper.Core/packages.lock.json` pin the full resolved dependency graph (not just the top-level package versions above) and are committed to the repo. Restore uses them automatically; if you ever need to change a package version, update the `PackageReference` and re-run a restore or publish to regenerate the lock file, then commit it alongside your change. Don't delete them or restores may silently resolve a different transitive graph than what's been tested.
+
 ## Releases
 
 [`.github/workflows/release.yml`](.github/workflows/release.yml) publishes the single-file `win-x64` build above as a GitHub Release. It only runs when the `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) actually changes on `main`, so ordinary pushes don't trigger a build. To cut a release, bump that version and push (or merge a PR that does); the workflow tags the commit `v<version>` and attaches `HyperbolicWarper-<version>-win-x64.exe` as a release asset. It can also be run manually from the Actions tab.

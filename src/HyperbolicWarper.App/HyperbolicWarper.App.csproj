@@ -6,7 +6,7 @@
         <OutputType>WinExe</OutputType>
 
         <!-- Bumping this triggers the release workflow (see .github/workflows/release.yml). -->
-        <Version>0.1.3-alpha</Version>
+        <Version>0.1.4-alpha</Version>
 
         <!-- WinUI 3 -->
         <UseWinUI>true</UseWinUI>
@@ -24,6 +24,13 @@
 
         <!-- App Options -->
         <UseRidGraph>true</UseRidGraph>
+        <!--
+            Pinning top-level PackageReference versions (below) wasn't enough: CI still resolved an
+            incomplete subset of Microsoft.WindowsAppSDK's own transitive sub-packages, differently
+            across separate runs of identical, pinned source. A lock file pins the entire resolved
+            graph, not just top-level versions, so restore can no longer land on a different result.
+        -->
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <Platforms>x86;x64;ARM64</Platforms>
         <!--
             IMPORTANT for self-contained publish: pass -p:PublishTrimmed=false -p:PublishReadyToRun=false

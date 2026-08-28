@@ -66,13 +66,8 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-      # Each step restores for itself instead of sharing one upfront `dotnet restore`. A prior
-      # release produced a self-contained build whose deps.json was missing several WindowsAppSDK
-      # runtime entries a working build had, despite pinned package versions and an otherwise
-      # identical restore+publish sequence reproduced locally. Restoring once and reusing that
-      # state across separately-scoped commands (solution-level restore, then a differently-scoped
-      # publish) is a plausible source of that inconsistency; letting each command own its restore
-      # removes the shared state instead of relying on further version pins to route around it.
+      # Each step restores for itself instead of sharing one upfront `dotnet restore`, removing one
+      # possible source of cross-step interference between differently-scoped restores.
       - name: Test
         run: dotnet test tests/HyperbolicWarper.Core.Tests/HyperbolicWarper.Core.Tests.csproj --configuration Release
 
@@ -83,12 +78,22 @@ jobs:
         # the csproj: self-contained publish trims by default, and trimming strips managed types that
         # are only ever reached through XAML reflection (value converters instantiated via
         # StaticResource, never "new"'d from C#), which crashes at runtime. See the csproj for details.
+        #
+        # RestoreLockedMode=true enforces packages.lock.json (App and Core csproj) instead of just
+        # hoping restore lands on the same graph as local testing did. Pinning top-level
+        # PackageReference versions alone was not enough: two releases in a row still crashed on
+        # launch because CI resolved an incomplete subset of Microsoft.WindowsAppSDK's own
+        # transitive sub-packages, differently each time, despite pinned top-level versions and an
+        # otherwise identical restore+publish sequence reproduced locally. A lock file pins the
+        # entire resolved graph, not just top-level versions, and restore fails outright in locked
+        # mode rather than silently resolving something different from what's committed.
         run: >
           dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj
           --configuration Release
           -p:Platform=x64
           -r win-x64
           --self-contained true
+          -p:RestoreLockedMode=true
           -p:PublishSingleFile=true
           -p:IncludeAllContentForSelfExtract=true
           -p:WindowsAppSDKSelfContained=true
