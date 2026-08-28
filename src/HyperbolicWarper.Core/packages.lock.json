@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "System.Text.Encoding.CodePages": {
+        "type": "Direct",
+        "requested": "[9.0.19, )",
+        "resolved": "9.0.19",
+        "contentHash": "YdYpIqb36ETsP1EB7Q1SieI0V9aRwQlXwL4uOtncFcBk/r+Y8IAG0Piy8QKe3tvt76/r3ijy9MBISklJQbyY6A=="
+      }
+    }
+  }
+}
