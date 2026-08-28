@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HyperbolicWarper.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "HyperbolicWarper.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

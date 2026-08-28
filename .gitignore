@@ -1,0 +1,13 @@
+## .NET / WinUI 3 build output
+bin/
+obj/
+publish/
+*.user
+
+## Visual Studio
+.vs/
+*.suo
+
+## OS cruft
+.DS_Store
+Thumbs.db
