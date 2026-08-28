@@ -48,19 +48,21 @@ dotnet run --project src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -p:Pla
 
 ## Publishing a standalone build
 
-The app is configured as **unpackaged** (no MSIX/store identity required), so it can be published as a single, self-contained `.exe` (everything, including the Windows App SDK runtime, is bundled into the file and extracted to a temp folder on first launch):
+The app is configured as **unpackaged** (no MSIX/store identity required), so it can be published as a self-contained folder (everything, including the Windows App SDK runtime, is bundled — no separate install step):
 
 ```bash
-dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true -p:WindowsAppSDKSelfContained=true -p:PublishTrimmed=false -p:PublishReadyToRun=false
+dotnet publish src/HyperbolicWarper.App/HyperbolicWarper.App.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:PublishTrimmed=false -p:PublishReadyToRun=false
 ```
 
-The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows10.0.19041.0/win-x64/publish/HyperbolicWarper.App.exe`. Copy that file anywhere and run it.
+The output lands under `src/HyperbolicWarper.App/bin/x64/Release/net9.0-windows10.0.19041.0/win-x64/publish/`. Zip that folder and distribute it; users unzip and run `HyperbolicWarper.App.exe`.
 
-`-p:PublishTrimmed=false -p:PublishReadyToRun=false` are required, not optional: self-contained publish trims the output by default, which strips managed types that are only reachable through XAML reflection (value converters instantiated via `StaticResource`, never `new`'d from C#) and crashes the app at runtime the first time such a converter runs. See the comment in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) for why this can't just be set once in the project file.
+**Do not add `-p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true`.** That was tried for a more convenient one-file download, but it reproducibly crashes on launch (`0xC000027B` in `Microsoft.UI.Xaml.dll`) on real hardware, every time, while the exact same publish without those two flags launches fine — confirmed by publishing both ways back to back on the same machine. Something about how `PublishSingleFile` extracts native DLLs (including `Microsoft.UI.Xaml.dll`) to a temp directory on first run is incompatible with WinUI 3. This cost a lot of time chasing red herrings (trimming, NuGet resolution, a Windows Server/GPU theory) because it was only ever validated in CI after the single-file switch — it was never actually a CI-only issue.
+
+`-p:PublishTrimmed=false -p:PublishReadyToRun=false` are still required: self-contained publish trims the output by default, which strips managed types that are only reachable through XAML reflection (value converters instantiated via `StaticResource`, never `new`'d from C#) and crashes the app at runtime the first time such a converter runs. See the comment in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj) for why this can't just be set once in the project file.
 
 `HyperbolicWarper.App/packages.lock.json` and `HyperbolicWarper.Core/packages.lock.json` pin the full resolved dependency graph (not just the top-level package versions above) and are committed to the repo. Restore uses them automatically; if you ever need to change a package version, update the `PackageReference` and re-run a restore or publish to regenerate the lock file, then commit it alongside your change. Don't delete them or restores may silently resolve a different transitive graph than what's been tested.
 
 ## Releases
 
-Releases are built and published locally rather than through GitHub Actions. GitHub's standard hosted Windows runners have no GPU, and WinUI 3 has a documented failure creating its `Window` with no hardware rendering device present (`0x8898008D`, matching [microsoft/microsoft-ui-xaml#10626](https://github.com/microsoft/microsoft-ui-xaml/issues/10626) and [#8446](https://github.com/microsoft/microsoft-ui-xaml/issues/8446)) — every CI-built release crashed in exactly that way despite working fine on real hardware, so there was no reliable way to validate a release build in that environment. Cutting a release means: bump `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj), run the publish command above on a real machine, verify the exe launches, then create the GitHub Release and attach `HyperbolicWarper-<version>-win-x64.exe` manually (tag it `v<version>`).
+Releases are built and published locally rather than through GitHub Actions — there's no CI step here worth the complexity now that publishing is a single local command. Cutting a release means: bump `<Version>` in [`HyperbolicWarper.App.csproj`](src/HyperbolicWarper.App/HyperbolicWarper.App.csproj), run the publish command above on a real machine, verify the exe launches, zip the publish folder as `HyperbolicWarper-<version>-win-x64.zip`, then create the GitHub Release and attach it manually (tag it `v<version>`).
 
