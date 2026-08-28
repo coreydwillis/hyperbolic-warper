@@ -2,6 +2,12 @@
 
 A lightweight Windows 11 (WinUI 3) app for time-shifting `.srt` subtitle files: shift every timecode forward or backward, or set the first cue's timecode and let the rest of the file follow, individually or across a whole batch.
 
+## License and AI-assisted development
+
+Hyperbolic Warper is open source under the [MIT License](LICENSE). You're free to use, modify, fork, and redistribute it, including for commercial purposes, as long as you keep the original copyright notice.
+
+This codebase was built with the assistance of AI coding tools (Anthropic's Claude Code), which were used throughout its design, implementation, and testing. This is disclosed here for anyone who prefers to avoid software built with AI assistance.
+
 ## Features
 
 - **Relative shift**: enter Hours / Minutes / Seconds / Milliseconds and a direction; every timecode in the file moves by that amount.
