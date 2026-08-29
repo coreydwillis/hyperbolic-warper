@@ -83,11 +83,14 @@ namespace HyperbolicWarper.App.Views
                 Content = "github.com/coreydwillis/hyperbolic-warper",
             };
 
+            // ms-appx:// requires package identity, which this unpackaged app doesn't have -- it
+            // resolves to nothing and the Image renders blank. Use a real file path instead.
+            var logoPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Square150x150Logo.scale-200.png");
             var logo = new Image
             {
-                Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/Square150x150Logo.scale-200.png")),
-                Width = 96,
-                Height = 96,
+                Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(logoPath)),
+                Width = 128,
+                Height = 128,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
 
