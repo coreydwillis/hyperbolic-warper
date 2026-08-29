@@ -52,14 +52,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Assets\AppIcon.ico" />
-        <Content Include="Assets\SplashScreen.scale-200.png" />
-        <Content Include="Assets\LockScreenLogo.scale-200.png" />
-        <Content Include="Assets\Square150x150Logo.scale-200.png" />
-        <Content Include="Assets\Square44x44Logo.scale-200.png" />
-        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-        <Content Include="Assets\StoreLogo.png" />
-        <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+        <!--
+            CopyToPublishDirectory is required, not redundant with Content's own default: WinUI3's
+            build targets treat everything under Assets\ as package-resource content meant for an
+            MSIX's resources.pri, and silently drop it from `dotnet publish` output (though not from
+            a plain `dotnet build`) for an unpackaged app, since there's no package to deliver it in.
+            AppIcon.ico and the About dialog's logo are loaded from disk at runtime via
+            AppContext.BaseDirectory, so they must actually be present in the publish output.
+        -->
+        <Content Include="Assets\AppIcon.ico" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\SplashScreen.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\LockScreenLogo.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\Square150x150Logo.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\Square44x44Logo.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\StoreLogo.png" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\Wide310x150Logo.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
