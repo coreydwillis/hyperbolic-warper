@@ -64,3 +64,7 @@ Always `clean` before publishing a release build -- reusing another configuratio
 ## License
 
 Public domain, released under [The Unlicense](LICENSE). Use, modify, fork, and redistribute it however you want, including for commercial purposes, with no attribution required.
+
+## Contributing
+
+Issues and pull requests are welcome.
