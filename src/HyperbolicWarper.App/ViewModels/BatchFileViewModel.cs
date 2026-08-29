@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using HyperbolicWarper.Core.Models;
 using HyperbolicWarper.Core.Services;
@@ -72,6 +73,22 @@ public partial class BatchFileViewModel : ObservableObject
         {
             Status = BatchFileStatus.Done;
         }
+    }
+
+    [RelayCommand]
+    private void ShowInFolder()
+    {
+        if (string.IsNullOrEmpty(OutputPath) || !File.Exists(OutputPath))
+        {
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "explorer.exe",
+            Arguments = $"/select,\"{OutputPath}\"",
+            UseShellExecute = true,
+        });
     }
 
     // Segoe Fluent Icons glyphs: More(pending), Sync, CheckMark, Warning, Cancel.

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -70,6 +72,52 @@ namespace HyperbolicWarper.App.Views
             Application.Current.Exit();
         }
 
+        private async void OnHowItWorksClicked(object sender, RoutedEventArgs e)
+        {
+            // Right padding reserves room for the ScrollViewer's overlay scrollbar so it doesn't
+            // sit on top of the text; not capping height lets ContentDialog size it naturally
+            // (it already constrains itself to the available window) instead of forcing a scroll
+            // that isn't needed.
+            var body = new StackPanel { Spacing = 16, Width = 420, Padding = new Thickness(0, 0, 16, 0) };
+
+            body.Children.Add(new TextBlock
+            {
+                Text = "Shift subtitle timecodes forward or backward, or align the first cue to a new start time, for one file or a whole batch.",
+                TextWrapping = TextWrapping.Wrap,
+            });
+
+            AddHelpSection(body, "Modes",
+                "Shift by amount: enter Hours / Minutes / Seconds / Milliseconds and a direction; every timecode in the file moves by that amount.\n\n" +
+                "Set first timecode to: enter the new start time for the first subtitle; the rest of the file follows by the same delta.");
+
+            AddHelpSection(body, "Batch processing",
+                "Drag & drop .srt files onto the list, or use File > Open file(s)... \"Apply same shift to all files\" toggles between one shift for everything and giving each file its own controls.");
+
+            AddHelpSection(body, "Output",
+                "Overwrite the original file in place, or leave it and write name.shifted.srt next to it.");
+
+            AddHelpSection(body, "Verification",
+                "After processing, each file shows a summary. Expand \"Verification details\" for the full before/after breakdown, including any clamped or out-of-order timecodes, and use \"Show in folder\" to locate the result.");
+
+            var dialog = new ContentDialog
+            {
+                Title = "How Hyperbolic Warper works",
+                Content = new ScrollViewer { Content = body, VerticalScrollBarVisibility = ScrollBarVisibility.Auto },
+                CloseButtonText = "Close",
+                XamlRoot = XamlRoot,
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private static void AddHelpSection(StackPanel container, string heading, string body)
+        {
+            var section = new StackPanel { Spacing = 4 };
+            section.Children.Add(new TextBlock { Text = heading, Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"] });
+            section.Children.Add(new TextBlock { Text = body, TextWrapping = TextWrapping.Wrap, Opacity = 0.85 });
+            container.Children.Add(section);
+        }
+
         private async void OnAboutClicked(object sender, RoutedEventArgs e)
         {
             var version = Assembly.GetExecutingAssembly()
@@ -108,6 +156,63 @@ namespace HyperbolicWarper.App.Views
             };
 
             await dialog.ShowAsync();
+        }
+
+        private async void OnSaveVerificationLogClicked(object sender, RoutedEventArgs e)
+        {
+            var processedFiles = ViewModel.Files.Where(f => f.Result is not null || f.Status == BatchFileStatus.Error).ToList();
+            if (processedFiles.Count == 0)
+            {
+                ViewModel.StatusMessage = "No files have been processed yet.";
+                return;
+            }
+
+            var picker = new FileSavePicker();
+            InitializeWithWindow.Initialize(picker, GetWindowHandle());
+            picker.SuggestedStartLocation = PickerLocationId.Downloads;
+            picker.SuggestedFileName = $"HyperbolicWarper-verification-log-{DateTime.Now:yyyy-MM-dd-HHmmss}";
+            picker.FileTypeChoices.Add("Text file", new List<string> { ".txt" });
+
+            var file = await picker.PickSaveFileAsync();
+            if (file is null)
+            {
+                return;
+            }
+
+            await FileIO.WriteTextAsync(file, BuildVerificationLog(processedFiles));
+            ViewModel.LastVerificationLogPath = file.Path;
+        }
+
+        private void OnOpenVerificationLogClicked(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.LastVerificationLogPath is not { } path || !File.Exists(path))
+            {
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+        }
+
+        private static string BuildVerificationLog(IReadOnlyList<BatchFileViewModel> files)
+        {
+            var log = new StringBuilder();
+            log.AppendLine("Hyperbolic Warper - Verification Log");
+            log.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            log.AppendLine($"Files processed: {files.Count}");
+            log.AppendLine();
+
+            foreach (var file in files)
+            {
+                log.AppendLine(new string('=', 60));
+                log.AppendLine(file.FileName);
+                log.AppendLine(new string('-', 60));
+                log.AppendLine(file.Status == BatchFileStatus.Error
+                    ? $"Failed: {file.ErrorMessage}"
+                    : file.DetailsText);
+                log.AppendLine();
+            }
+
+            return log.ToString();
         }
 
         private static IntPtr GetWindowHandle()

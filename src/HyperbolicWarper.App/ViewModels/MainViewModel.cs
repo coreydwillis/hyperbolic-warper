@@ -41,6 +41,12 @@ public partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ProcessAllCommand))]
     private bool _hasFiles;
 
+    [ObservableProperty]
+    private bool _hasProcessedFiles;
+
+    [ObservableProperty]
+    private string? _lastVerificationLogPath;
+
     public bool PerFileShiftVisible => !ApplySameShiftToAllFiles;
 
     public MainViewModel()
@@ -63,8 +69,14 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private void OnFilesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+    private void OnFilesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
         HasFiles = Files.Count > 0;
+        RefreshHasProcessedFiles();
+    }
+
+    private void RefreshHasProcessedFiles() =>
+        HasProcessedFiles = Files.Any(f => f.Result is not null || f.Status == BatchFileStatus.Error);
 
     public void AddFiles(IEnumerable<string> paths)
     {
@@ -108,6 +120,7 @@ public partial class MainViewModel : ObservableObject
     {
         Files.Clear();
         StatusMessage = null;
+        LastVerificationLogPath = null;
     }
 
     private bool CanProcessAll() => HasFiles && !IsProcessing;
@@ -118,6 +131,7 @@ public partial class MainViewModel : ObservableObject
         IsProcessing = true;
         OverallProgress = 0;
         ValidationMessage = null;
+        LastVerificationLogPath = null;
 
         foreach (var file in Files)
         {
@@ -170,6 +184,7 @@ public partial class MainViewModel : ObservableObject
         finally
         {
             IsProcessing = false;
+            RefreshHasProcessedFiles();
         }
     }
 }

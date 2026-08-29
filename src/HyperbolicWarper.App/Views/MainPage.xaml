@@ -22,9 +22,15 @@
         <converters:ShiftModeEqualsConverter x:Key="ModeEquals" />
     </Page.Resources>
 
-    <Grid RowSpacing="12">
+    <!--
+        RowSpacing intentionally 0: Grid.RowSpacing adds space between every row track regardless
+        of whether the content in it is visible, so with InfoBar closed (its usual state) it was
+        adding two stacked 12px gaps between the menu bar and the content below instead of one.
+        Spacing is set explicitly per-element below instead, so the gap is a consistent 16px
+        (matching the panels' own padding) whether or not the InfoBar is showing.
+    -->
+    <Grid RowSpacing="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -37,28 +43,21 @@
                 <MenuFlyoutItem Text="Exit" Click="OnExitClicked" />
             </MenuBarItem>
             <MenuBarItem Title="Help">
+                <MenuFlyoutItem Text="How Hyperbolic Warper works" Click="OnHowItWorksClicked" />
+                <MenuFlyoutSeparator />
                 <MenuFlyoutItem Text="About Hyperbolic Warper" Click="OnAboutClicked" />
             </MenuBarItem>
         </MenuBar>
 
-        <StackPanel Grid.Row="1" Spacing="4" Padding="16,0,16,0">
-            <TextBlock Text="Hyperbolic Warper" Style="{ThemeResource TitleLargeTextBlockStyle}" />
-            <TextBlock
-                Text="Shift subtitle timecodes forward or backward, or align the first cue to a new start time, for one file or a whole batch."
-                Style="{ThemeResource BodyTextBlockStyle}"
-                Opacity="0.7"
-                TextWrapping="Wrap" />
-        </StackPanel>
-
         <InfoBar
-            Grid.Row="2"
+            Grid.Row="1"
             Margin="16,0,16,0"
             Title="Some files were skipped"
             Message="{Binding ValidationMessage}"
             Severity="Warning"
             IsOpen="{Binding HasValidationMessage}" />
 
-        <Grid Grid.Row="3" x:Name="ContentGrid" Padding="16,0,16,16">
+        <Grid Grid.Row="2" x:Name="ContentGrid" Padding="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" MinWidth="300" />
                 <ColumnDefinition Width="Auto" />
@@ -114,6 +113,7 @@
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
                                         <Grid Grid.Row="0" ColumnSpacing="10">
@@ -153,13 +153,20 @@
                                                 CommandParameter="{Binding}" />
                                         </Grid>
 
-                                        <views:ShiftInputControl
+                                        <Button
                                             Grid.Row="1"
+                                            Content="Show in folder"
+                                            HorizontalAlignment="Left"
+                                            Command="{Binding ShowInFolderCommand}"
+                                            Visibility="{Binding OutputPath, Converter={StaticResource NullToVisibility}}" />
+
+                                        <views:ShiftInputControl
+                                            Grid.Row="2"
                                             Settings="{Binding Shift}"
                                             Visibility="{Binding ElementName=RootPage, Path=DataContext.PerFileShiftVisible, Converter={StaticResource BoolToVisibility}}" />
 
                                         <Expander
-                                            Grid.Row="2"
+                                            Grid.Row="3"
                                             Header="Verification details"
                                             IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                             Visibility="{Binding Result, Converter={StaticResource NullToVisibility}}"
@@ -255,6 +262,18 @@
                             Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}" />
 
                         <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" MaxWidth="260" Opacity="0.8" />
+
+                        <Button
+                            Content="Save verification log..."
+                            HorizontalAlignment="Stretch"
+                            Click="OnSaveVerificationLogClicked"
+                            Visibility="{Binding HasProcessedFiles, Converter={StaticResource BoolToVisibility}}" />
+
+                        <Button
+                            Content="Open verification log"
+                            HorizontalAlignment="Stretch"
+                            Click="OnOpenVerificationLogClicked"
+                            Visibility="{Binding LastVerificationLogPath, Converter={StaticResource NullToVisibility}}" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
