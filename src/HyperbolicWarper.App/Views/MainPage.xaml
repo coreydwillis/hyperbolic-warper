@@ -9,6 +9,7 @@
     xmlns:converters="using:HyperbolicWarper.App.Converters"
     xmlns:viewmodels="using:HyperbolicWarper.App.ViewModels"
     xmlns:views="using:HyperbolicWarper.App.Views"
+    xmlns:controls="using:HyperbolicWarper.App.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -21,14 +22,26 @@
         <converters:ShiftModeEqualsConverter x:Key="ModeEquals" />
     </Page.Resources>
 
-    <Grid Padding="16" RowSpacing="12">
+    <Grid RowSpacing="12">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Spacing="4">
+        <MenuBar Grid.Row="0">
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="Open file(s)..." Click="OnAddFilesClicked" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Exit" Click="OnExitClicked" />
+            </MenuBarItem>
+            <MenuBarItem Title="Help">
+                <MenuFlyoutItem Text="About Hyperbolic Warper" Click="OnAboutClicked" />
+            </MenuBarItem>
+        </MenuBar>
+
+        <StackPanel Grid.Row="1" Spacing="4" Padding="16,0,16,0">
             <TextBlock Text="Hyperbolic Warper" Style="{ThemeResource TitleLargeTextBlockStyle}" />
             <TextBlock
                 Text="Shift subtitle timecodes forward or backward, or align the first cue to a new start time, for one file or a whole batch."
@@ -38,13 +51,14 @@
         </StackPanel>
 
         <InfoBar
-            Grid.Row="1"
+            Grid.Row="2"
+            Margin="16,0,16,0"
             Title="Some files were skipped"
             Message="{Binding ValidationMessage}"
             Severity="Warning"
             IsOpen="{Binding HasValidationMessage}" />
 
-        <Grid Grid.Row="2" x:Name="ContentGrid">
+        <Grid Grid.Row="3" x:Name="ContentGrid" Padding="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" MinWidth="300" />
                 <ColumnDefinition Width="Auto" />
@@ -166,7 +180,7 @@
             </Border>
 
             <!-- Splitter -->
-            <Border
+            <controls:SplitterHandle
                 Grid.Column="1"
                 x:Name="Splitter"
                 Width="10"
@@ -188,7 +202,7 @@
                     Opacity="0.4"
                     RadiusX="1"
                     RadiusY="1" />
-            </Border>
+            </controls:SplitterHandle>
 
             <!-- Settings panel -->
             <Border

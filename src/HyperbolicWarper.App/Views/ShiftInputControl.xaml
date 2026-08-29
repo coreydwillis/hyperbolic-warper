@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:HyperbolicWarper.App.Converters"
+    xmlns:behaviors="using:HyperbolicWarper.App.Behaviors"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -37,6 +38,7 @@
                 Maximum="999"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
+                behaviors:NumberBoxExtensions.MaxLength="3"
                 HorizontalAlignment="Stretch" />
             <NumberBox
                 Grid.Row="0"
@@ -47,6 +49,7 @@
                 Maximum="59"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
+                behaviors:NumberBoxExtensions.MaxLength="2"
                 HorizontalAlignment="Stretch" />
             <NumberBox
                 Grid.Row="1"
@@ -57,6 +60,7 @@
                 Maximum="59"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
+                behaviors:NumberBoxExtensions.MaxLength="2"
                 HorizontalAlignment="Stretch" />
             <NumberBox
                 Grid.Row="1"
@@ -67,6 +71,7 @@
                 Maximum="999"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
+                behaviors:NumberBoxExtensions.MaxLength="3"
                 HorizontalAlignment="Stretch" />
         </Grid>
         <ToggleSwitch
