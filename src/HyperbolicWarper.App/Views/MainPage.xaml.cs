@@ -146,6 +146,13 @@ namespace HyperbolicWarper.App.Views
             content.Children.Add(logo);
             content.Children.Add(new TextBlock { Text = $"Version {version}", HorizontalAlignment = HorizontalAlignment.Center });
             content.Children.Add(repoLink);
+            content.Children.Add(new TextBlock
+            {
+                Text = "MIT License © 2026 Corey Willis",
+                Opacity = 0.7,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+            });
 
             var dialog = new ContentDialog
             {
