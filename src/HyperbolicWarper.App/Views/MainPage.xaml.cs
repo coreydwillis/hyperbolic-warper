@@ -148,7 +148,7 @@ namespace HyperbolicWarper.App.Views
             content.Children.Add(repoLink);
             content.Children.Add(new TextBlock
             {
-                Text = "MIT License © 2026 Corey Willis",
+                Text = "Public domain (The Unlicense) -- no rights reserved",
                 Opacity = 0.7,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
