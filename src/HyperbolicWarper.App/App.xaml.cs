@@ -38,6 +38,7 @@ namespace HyperbolicWarper.App
             if (_window.AppWindow is { } appWindow)
             {
                 appWindow.Resize(new SizeInt32(1180, 1150));
+                appWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
                 if (appWindow.Presenter is OverlappedPresenter presenter)
                 {
                     presenter.PreferredMinimumWidth = 700;

@@ -1,5 +1,8 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -62,6 +65,51 @@ namespace HyperbolicWarper.App.Views
             ViewModel.AddFiles(paths);
         }
 
+        private void OnExitClicked(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Exit();
+        }
+
+        private async void OnAboutClicked(object sender, RoutedEventArgs e)
+        {
+            var version = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
+                .Split('+')[0] ?? "unknown";
+
+            var repoLink = new HyperlinkButton
+            {
+                NavigateUri = new Uri("https://github.com/coreydwillis/hyperbolic-warper"),
+                Content = "github.com/coreydwillis/hyperbolic-warper",
+            };
+
+            // ms-appx:// requires package identity, which this unpackaged app doesn't have -- it
+            // resolves to nothing and the Image renders blank. Use a real file path instead.
+            var logoPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Square150x150Logo.scale-200.png");
+            var logo = new Image
+            {
+                Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(logoPath)),
+                Width = 128,
+                Height = 128,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            var content = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Center };
+            content.Children.Add(logo);
+            content.Children.Add(new TextBlock { Text = $"Version {version}", HorizontalAlignment = HorizontalAlignment.Center });
+            content.Children.Add(repoLink);
+
+            var dialog = new ContentDialog
+            {
+                Title = "Hyperbolic Warper",
+                Content = content,
+                CloseButtonText = "Close",
+                XamlRoot = XamlRoot,
+            };
+
+            await dialog.ShowAsync();
+        }
+
         private static IntPtr GetWindowHandle()
         {
             var app = (App)Application.Current;
@@ -71,6 +119,7 @@ namespace HyperbolicWarper.App.Views
         private void OnSplitterPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             SplitterGrip.Opacity = 1;
+            Splitter.SetCursor(InputSystemCursorShape.SizeWestEast);
         }
 
         private void OnSplitterPointerExited(object sender, PointerRoutedEventArgs e)
@@ -78,6 +127,7 @@ namespace HyperbolicWarper.App.Views
             if (!_isDraggingSplitter)
             {
                 SplitterGrip.Opacity = 0.4;
+                Splitter.SetCursor(InputSystemCursorShape.Arrow);
             }
         }
 
@@ -112,11 +162,24 @@ namespace HyperbolicWarper.App.Views
         {
             _isDraggingSplitter = false;
             Splitter.ReleasePointerCapture(e.Pointer);
+            ResetSplitterCursorIfPointerOutside(e);
         }
 
         private void OnSplitterPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
             _isDraggingSplitter = false;
+            ResetSplitterCursorIfPointerOutside(e);
+        }
+
+        private void ResetSplitterCursorIfPointerOutside(PointerRoutedEventArgs e)
+        {
+            var position = e.GetCurrentPoint(Splitter).Position;
+            var bounds = new Windows.Foundation.Rect(0, 0, Splitter.ActualWidth, Splitter.ActualHeight);
+            if (!bounds.Contains(position))
+            {
+                SplitterGrip.Opacity = 0.4;
+                Splitter.SetCursor(InputSystemCursorShape.Arrow);
+            }
         }
     }
 }
